@@ -1,10 +1,53 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch,faBars } from "@fortawesome/free-solid-svg-icons";
 import { toggleMenu } from "../Utils/appSlice";
 import { useDispatch } from "react-redux";
+import { YOUTUBE_SEARCH_API } from "../Utils/constant";
 
 const Head = () => {
+  const [searchQuery,setSearchQuery] = useState("");
+  const [suggestion,setSuggestion] = useState([])
+
+  useEffect(()=> {
+   
+    // console.log(searchQuery);
+
+    //make an API calls every key stroke 
+    // but if the difference between 2 API calls is lessthan 200ms
+    // decline the API calls
+    const timer = setTimeout(()=>getSearchSuggention(),200);
+    return () => {
+      clearTimeout(timer)
+    }
+  },[searchQuery]);
+
+  /**
+   * press key -i 
+   *  -- it will  render the component
+   *  --it will call useEfect()
+   * start timer => make api call after 200ms
+   * 
+   * one more key i pressed key -iphone
+   * 
+   * -- before 200ms you will press the key it will distroy the component(useEffect return method)
+   *  --it will again re rendered componet
+   * --it will call useEfect()
+   *    * start timer => make api call after 200ms it is new timer
+   * 
+   * 
+   * setTimer(200) make an api call
+   * 
+   */
+
+  const getSearchSuggention = async () => {
+    console.log(searchQuery);
+    const data = await fetch(YOUTUBE_SEARCH_API + searchQuery)
+    const json = await data.json();
+    // console.log(json[1]);
+    setSuggestion(json[1]);
+  }
+
   const dispatch = useDispatch()
   const toggleMenuHandler = () => {
     dispatch(toggleMenu());
@@ -23,15 +66,32 @@ src="https://www.gstatic.com/youtube/img/promos/growth/2c86013cfb51f78fd2102b435
 </a>
       </div>
       <div className="col-span-10 px-10">
-        <input className="w-1/2 border border-gray-400 p-2 rounded-l-full"type="text" />
-        <button className="border border-gray-400 p-2 rounded-r-full bg-gray-100"><FontAwesomeIcon icon={faSearch} /></button>
+      <div>
+        <input className="px-5 w-1/2 border border-gray-400 p-2 rounded-l-full"type="text" value={searchQuery} onChange={(e)=> setSearchQuery(e.target.value)} />
+        <button className="border border-gray-400 px-5  py-2 rounded-r-full bg-gray-100"><FontAwesomeIcon icon={faSearch} /></button>
       </div>
+      {suggestion.length > 0 && (
+      <div className=" fixed bg-white py-2 px-2 w-[37rem] shadow-lg rounded-lg border border-gray-100">
+      <ul >
+ {suggestion.map((s) => (
+    <li key={s} className="py-2 shodow-sm"> <FontAwesomeIcon icon={faSearch} className="mr-2"/>{s}</li>
+))
+ }
+        
+
+      </ul>
+      
+      </div>
+      )}
+      </div>
+
       <div className="col-span-1">
         <img className="h-8"
           alt="user-icon"
           src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtRs_rWILOMx5-v3aXwJu7LWUhnPceiKvvDg&s"
         />
       </div>
+     
     </div>
   );
 };
