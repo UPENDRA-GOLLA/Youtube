@@ -5,7 +5,6 @@ import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse, faPlay, faTv,faHistory, faList, faVideo, faClock, faThumbsUp,faFire, faShoppingCart, faMusic, faFilm, faNewspaper, faFutbol, faBookOpen, faTshirt, faPodcast,faCrown, faTachometerAlt, faChild,faFlag, faQuestionCircle, faComments,faCog  } from "@fortawesome/free-solid-svg-icons";
 import { useSelector } from "react-redux";
-import store from "../Utils/strore";
 import { Link } from "react-router-dom";
 
 

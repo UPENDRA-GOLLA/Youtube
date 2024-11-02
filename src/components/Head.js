@@ -2,12 +2,16 @@ import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch,faBars } from "@fortawesome/free-solid-svg-icons";
 import { toggleMenu } from "../Utils/appSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { YOUTUBE_SEARCH_API } from "../Utils/constant";
+import { cacheResults } from "../Utils/searchSlice";
 
 const Head = () => {
   const [searchQuery,setSearchQuery] = useState("");
-  const [suggestion,setSuggestion] = useState([])
+  const [suggestion,setSuggestion] = useState([]);
+  const [showSuggetion,setShowSuggestion] = useState(false);
+  
+  const searchCache = useSelector((store)=> store.search)
 
   useEffect(()=> {
    
@@ -16,7 +20,24 @@ const Head = () => {
     //make an API calls every key stroke 
     // but if the difference between 2 API calls is lessthan 200ms
     // decline the API calls
-    const timer = setTimeout(()=>getSearchSuggention(),200);
+
+    /**
+     * searchCache = {
+     * 'iphone' : ["iphone 11" , "iphone 14"
+     * ]}
+     * next time  i am search the iphone it will not give results because i alredy store the api
+     * serachquery = iphone
+     */
+    const timer = setTimeout(()=>{
+      if(searchCache[searchQuery]) {
+        setSuggestion((searchCache[searchQuery]))
+      }
+        else {
+          getSearchSuggention()
+        }
+      }
+       
+        ,200);
     return () => {
       clearTimeout(timer)
     }
@@ -41,11 +62,19 @@ const Head = () => {
    */
 
   const getSearchSuggention = async () => {
-    console.log(searchQuery);
+    // console.log(searchQuery);
     const data = await fetch(YOUTUBE_SEARCH_API + searchQuery)
     const json = await data.json();
     // console.log(json[1]);
     setSuggestion(json[1]);
+
+    // update cache
+    dispatch(cacheResults(
+     {
+     [ searchQuery]: json[1]
+     
+     }
+    ))
   }
 
   const dispatch = useDispatch()
@@ -67,11 +96,15 @@ src="https://www.gstatic.com/youtube/img/promos/growth/2c86013cfb51f78fd2102b435
       </div>
       <div className="col-span-10 px-10">
       <div>
-        <input className="px-5 w-1/2 border border-gray-400 p-2 rounded-l-full"type="text" value={searchQuery} onChange={(e)=> setSearchQuery(e.target.value)} />
+        <input className="px-5 w-1/2 border border-gray-400 p-2 rounded-l-full"type="text" value={searchQuery} onChange={(e)=> setSearchQuery(e.target.value)}
+        onFocus={()=> setShowSuggestion(true)}
+          onBlur={()=>setShowSuggestion(false)}
+        />
+
         <button className="border border-gray-400 px-5  py-2 rounded-r-full bg-gray-100"><FontAwesomeIcon icon={faSearch} /></button>
       </div>
-      {suggestion.length > 0 && (
-      <div className=" fixed bg-white py-2 px-2 w-[37rem] shadow-lg rounded-lg border border-gray-100">
+      {showSuggetion && 
+      <div className=" fixed bg-white py-2 px-2 w-[37rem] shadow-lg rounded-lg border border-gray-100 ">
       <ul >
  {suggestion.map((s) => (
     <li key={s} className="py-2 shodow-sm"> <FontAwesomeIcon icon={faSearch} className="mr-2"/>{s}</li>
@@ -82,7 +115,7 @@ src="https://www.gstatic.com/youtube/img/promos/growth/2c86013cfb51f78fd2102b435
       </ul>
       
       </div>
-      )}
+      }
       </div>
 
       <div className="col-span-1">
