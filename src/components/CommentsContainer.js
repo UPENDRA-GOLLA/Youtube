@@ -143,7 +143,7 @@ import React from "react";
     }, {
         name:'Upendra',
         text:"Lorem issue dolor sit amet, consectetur adip",
-        replies:[]
+        replies:[],
     }
 
 ]
@@ -157,22 +157,19 @@ const Comment = ({data}) => {
             <p>{text}</p>
         </div>
     </div>
-}
+};
 
 
   
-  const CommentList = ({ comments }) => {
-    return comments.map((comment) => (
-      <div key={comment.id}> {/* key should be on the top-level element here */}
+const CommentList = ({ comments }) => {
+    return comments.map((comment, index) => (
+      <div key={index}> {/* Use index as key here */}
         <Comment data={comment} />
+        {comment.replies.length > 0 && (
           <div className="pl-5 border border-l-black ml-5">
-            {/* recursive call with a unique key */}
-             {/* <Comment key={comment.id} data={comment} />
-      <Comment key={comment.id} data={comment} />
-      <Comment key={comment.id} data={comment} />  or*/}
             <CommentList comments={comment.replies} />
           </div>
-      
+        )}
       </div>
     ));
   };
